@@ -16,7 +16,7 @@ class _CompleteTodoState extends State<CompleteTodo> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        margin: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
+        margin: const EdgeInsets.symmetric(vertical: 24, horizontal: 12),
         color: Colors.white,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,

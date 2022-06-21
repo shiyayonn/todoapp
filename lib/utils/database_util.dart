@@ -1,108 +1,75 @@
-import 'package:sqflite/sqflite.dart';
-import 'dart:async';
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter/foundation.dart';
+import 'package:sqflite/sqflite.dart' as sql;
 
-import '../models/todo.dart';
+class SQLHelper {
+  static Future<void> createTables(sql.Database database) async {
+    await database.execute("""CREATE TABLE todo(
+        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        isCompleted BOOLEAN DEFAULT FALSE,
+        title TEXT,
+        details TEXT,
+        dateCreated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+      """);
+  }
+// id: the id of a item
+// title, details: name and details of your activity
+// created_at: the time that the item was created. It will be automatically handled by SQLite
 
-class DatabaseHelper {
-  static DatabaseHelper _databaseHelper; // Singleton DatabaseHelper
-  static Database _database; // Singleton Database
+  static Future<sql.Database> db() async {
+    return sql.openDatabase(
+      'json.db',
+      version: 1,
+      onCreate: (sql.Database database, int version) async {
+        await createTables(database);
+      },
+    );
+  }
 
-  String todoTable = 'todo_table';
-  String colId = 'id';
-  String colIsCompleted = 'isCompleted';
-  String colTitle = 'title';
-  String colDetails = 'details';
-  String coldateCompleted = 'dateCompleted';
+  // Create new Todo
+  static Future<int> createItem(String title, String? details) async {
+    final db = await SQLHelper.db();
 
-  DatabaseHelper._createInstance(); // Named constructor to create instance of DatabaseHelper
+    final data = {'title': title, 'details': details};
+    final id = await db.insert('todo', data);
+    return id;
+  }
 
-  factory DatabaseHelper() {
-    if (_databaseHelper == null) {
-      _databaseHelper = DatabaseHelper
-          ._createInstance(); // This is executed only once, singleton object
+  // Read all todo
+  static Future<List<Map<String, dynamic>>> getTodos() async {
+    final db = await SQLHelper.db();
+    return db.query('todo', orderBy: "id");
+  }
+
+  // Read a single item by id
+  // The app doesn't use this method but I put here in case you want to see it
+  static Future<List<Map<String, dynamic>>> getTodo(int id) async {
+    final db = await SQLHelper.db();
+    return db.query('todo', where: "id = ?", whereArgs: [id], limit: 1);
+  }
+
+  // Update an item by id
+  static Future<int> updateItem(int id, String title, String? details) async {
+    final db = await SQLHelper.db();
+
+    final data = {
+      'title': title,
+      'details': details,
+      'dateCreated': DateTime.now().toString()
+    };
+
+    final result =
+        await db.update('todo', data, where: "id = ?", whereArgs: [id]);
+    return result;
+  }
+
+  // Delete
+  static Future<void> deleteItem(int id) async {
+    final db = await SQLHelper.db();
+    try {
+      await db.delete("todo", where: "id = ?", whereArgs: [id]);
+    } catch (err) {
+      debugPrint("Something went wrong when deleting an item: $err");
     }
-    return _databaseHelper;
-  }
-
-  Future<Database> get database async {
-    if (_database == null) {
-      _database = await initializeDatabase();
-    }
-    return _database;
-  }
-
-  Future<Database> initializeDatabase() async {
-    // Get the directory path for both Android and iOS to store database.
-    Directory directory = await getApplicationDocumentsDirectory();
-    String path = directory.path + 'todos.db';
-
-    // Open/create the database at a given path
-    var todosDatabase =
-        await openDatabase(path, version: 1, onCreate: _createDb);
-    return todosDatabase;
-  }
-
-  void _createDb(Database db, int newVersion) async {
-    await db.execute(
-        'CREATE TABLE $todoTable($colId INTEGER PRIMARY KEY AUTOINCREMENT, $colTitle TEXT, $colIsCompleted BOOLEAN ,'
-        '$colDetails TEXT, $coldateCompleted TEXT)');
-  }
-
-  // Fetch Operation: Get all todo objects from database
-  Future<List<Map<String, dynamic>>> getTodoMapList() async {
-    Database db = await database;
-
-//		var result = await db.rawQuery('SELECT * FROM $todoTable order by $colTitle ASC');
-    var result = await db.query(todoTable, orderBy: '$colTitle ASC');
-    return result;
-  }
-
-  // Insert Operation: Insert a todo object to database
-  Future<int> insertTodo(Todo todo) async {
-    Database db = await this.database;
-    var result = await db.insert(todoTable, todo.toMap());
-    return result;
-  }
-
-  // UpdateCompleted Operation: UpdateCompleted a todo object and save it to database
-  Future<int> updateCompletedTodo(Todo todo) async {
-    var db = await this.database;
-    var result = await db.updateCompleted(todoTable, todo.toMap(),
-        where: '$colId = ?', whereArgs: [todo.id]);
-    return result;
-  }
-
-  // Delete Operation: Delete a todo object from database
-  Future<int> deleteTodo(int id) async {
-    var db = await this.database;
-    int result =
-        await db.rawDelete('DELETE FROM $todoTable WHERE $colId = $id');
-    return result;
-  }
-
-  // Get number of todo objects in database
-  Future<int?> getCount() async {
-    Database db = await this.database;
-    List<Map<String, dynamic>> x =
-        await db.rawQuery('SELECT COUNT (*) from $todoTable');
-    int? result = Sqflite.firstIntValue(x);
-    return result;
-  }
-
-  // Get the 'Map List' [ List<Map> ] and convert it to 'todo List' [ List<Todo> ]
-  Future<List<Todo>> getTodoList() async {
-    var todoMapList = await getTodoMapList(); // Get 'Map List' from database
-    int count =
-        todoMapList.length; // Count the number of map entries in db table
-
-    List<Todo> todoList = [];
-    // For loop to create a 'todo List' from a 'Map List'
-    for (int i = 0; i < count; i++) {
-      todoList.add(Todo.fromMapObject(todoMapList[i]));
-    }
-
-    return todoList;
   }
 }

@@ -1,6 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
+
+import '../models/todo.dart';
+import '../utils/database_util.dart';
 
 class AddTodo extends StatefulWidget {
   const AddTodo({
@@ -18,11 +22,21 @@ class _AddTodoState extends State<AddTodo> {
   final _detailCtrl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  _onSaved() {
+  Future<void> _onSaved() async {
     if (_formKey.currentState!.validate()) {
+      await SQLHelper.createItem(_titleCtrl.text, _detailCtrl.text);
+      final data = await SQLHelper.getTodos();
+      print(data);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            backgroundColor: Colors.green,
+            content: Text('Succesfully added new Task')),
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill up all fields')),
+        const SnackBar(
+            backgroundColor: Colors.red,
+            content: Text('Please fill up all fields')),
       );
     }
   }
@@ -34,14 +48,13 @@ class _AddTodoState extends State<AddTodo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(        
+      appBar: AppBar(
         title: const Text('Create Task'),
       ),
       body: Form(
         key: _formKey,
         child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
-            
+            margin: const EdgeInsets.symmetric(vertical: 24, horizontal: 12),
             color: Colors.white,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,

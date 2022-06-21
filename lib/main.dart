@@ -39,7 +39,7 @@ class _MyHomePageState extends State<MyHomePage> {
   static const List<Widget> _pages = <Widget>[
   IncompleteTodo(),
   CompleteTodo(),
-  ArchivedTodo(),
+ // ArchivedTodo(),
   
 ];
   void _addTodo() {
@@ -70,16 +70,16 @@ class _MyHomePageState extends State<MyHomePage> {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.task_outlined),
-            label: 'Incomplete Task',
+            label: 'Incomplete',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.task),
-            label: 'Completed Task',
+            label: 'Completed',
           ),
-          BottomNavigationBarItem(
+       /*    BottomNavigationBarItem(
             icon: Icon(Icons.archive),
             label: 'Archived Task',
-          ),
+          ), */
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.blue[800],

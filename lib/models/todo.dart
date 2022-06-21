@@ -1,11 +1,11 @@
 class Todo {
-  int _id;
+  int? _id;
   bool _isCompleted;
   String _title;
   String _details;
   DateTime _dateCreated;
 
-  int get id => _id;
+  int? get id => _id;
 
   bool get isCompleted => _isCompleted;
 
@@ -15,7 +15,7 @@ class Todo {
 
   DateTime get dateCreated => _dateCreated;
 
-  Todo(this._id, this._isCompleted, this._title, this._details,
+  Todo(this._id,this._isCompleted, this._title, this._details,
       this._dateCreated);
 
   Map<String, dynamic> toMap() {
