@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:todoapp/screens/add_todo.dart';
-import 'package:todoapp/screens/archived_todo.dart';
+import 'package:todoapp/screens/all_todo.dart';
 import 'package:todoapp/screens/complete_todo.dart';
 import 'package:todoapp/screens/incomplete_todo.dart';
 
@@ -33,22 +33,30 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+GlobalKey<AllTodoState> globalKey1 = GlobalKey<AllTodoState>();
+GlobalKey<IncompleteTodoState> globalKey2 = GlobalKey<IncompleteTodoState>();
+GlobalKey<CompleteTodoState> globalKey3 = GlobalKey<CompleteTodoState>();
+
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _pages = <Widget>[
-  IncompleteTodo(),
-  CompleteTodo(),
- // ArchivedTodo(),
-  
-];
+  final List<Widget> _pages = <Widget>[
+    AllTodo(key:globalKey1),
+    IncompleteTodo(key: globalKey2),
+    CompleteTodo(key:globalKey3),
+    // ArchivedTodo(),
+  ];
   void _addTodo() {
     Navigator.push(
       context,
       MaterialPageRoute(
           // haBs an error if you put on const
           builder: (context) => const AddTodo()),
-    );
+    ).then((value) {
+      globalKey1.currentState?.refreshTodos();
+      globalKey2.currentState?.refreshTodos();
+      globalKey3.currentState?.refreshTodos();
+    });
   }
 
   void _onItemTapped(int index) {
@@ -69,6 +77,10 @@ class _MyHomePageState extends State<MyHomePage> {
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
+            icon: Icon(Icons.list),
+            label: 'All',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.task_outlined),
             label: 'Incomplete',
           ),
@@ -76,10 +88,6 @@ class _MyHomePageState extends State<MyHomePage> {
             icon: Icon(Icons.task),
             label: 'Completed',
           ),
-       /*    BottomNavigationBarItem(
-            icon: Icon(Icons.archive),
-            label: 'Archived Task',
-          ), */
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.blue[800],

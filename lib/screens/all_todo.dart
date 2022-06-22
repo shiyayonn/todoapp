@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 
 import '../utils/sql_helper.dart';
 
-class IncompleteTodo extends StatefulWidget {
-  const IncompleteTodo({Key? key}) : super(key: key);
+class AllTodo extends StatefulWidget {
+  const AllTodo({
+    super.key,
+  });
 
   @override
-  State<IncompleteTodo> createState() => IncompleteTodoState();
+  State<AllTodo> createState() => AllTodoState();
 }
 
-class IncompleteTodoState extends State<IncompleteTodo> {
-  // All journals
+class AllTodoState extends State<AllTodo> {
   List<Map<String, dynamic>> _todos = [];
 
   late SQLHelper sqlHelper;
@@ -21,7 +22,7 @@ class IncompleteTodoState extends State<IncompleteTodo> {
       _isLoading = true;
     });
 
-    final data = await sqlHelper.getIncompleteTodos();
+    final data = await sqlHelper.getAllTodos();
 
     setState(() {
       _todos = data;
@@ -55,15 +56,12 @@ class IncompleteTodoState extends State<IncompleteTodo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : Container(
+      body: 
+           Container(
               margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
               color: Colors.white,
               child: _todos.isEmpty
-                  ? const Center(child: Text("There are no incomplete task."))
+                  ? const Center(child: Text("There are no task."))
                   : ListView.builder(
                       itemCount: _todos.length,
                       itemBuilder: (context, index) => Card(

@@ -1,10 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
-
-import '../models/todo.dart';
-import '../utils/database_util.dart';
+import '../utils/sql_helper.dart';
 
 class AddTodo extends StatefulWidget {
   const AddTodo({
@@ -18,15 +15,38 @@ class AddTodo extends StatefulWidget {
 class _AddTodoState extends State<AddTodo> {
   bool isValid = false;
 
+  late SQLHelper sqlHelper;
+
   final _titleCtrl = TextEditingController();
   final _detailCtrl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
+  @override
+  void initState() {
+    super.initState();
+
+    sqlHelper = SQLHelper();
+    sqlHelper.initDB().whenComplete(() async {
+      setState(() {});
+    });
+  }
+
   Future<void> _onSaved() async {
     if (_formKey.currentState!.validate()) {
-      await SQLHelper.createItem(_titleCtrl.text, _detailCtrl.text);
-      final data = await SQLHelper.getTodos();
-      print(data);
+      await sqlHelper
+          .createItem(_titleCtrl.text, _detailCtrl.text)
+          .catchError((err) {
+        if (err.toString().contains(
+            "DatabaseException(UNIQUE constraint failed: todo.title, todo.details")) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                backgroundColor: Colors.red,
+                content: Text('Task already exist')),
+          );
+          
+        }
+        
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             backgroundColor: Colors.green,
@@ -54,7 +74,7 @@ class _AddTodoState extends State<AddTodo> {
       body: Form(
         key: _formKey,
         child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 24, horizontal: 12),
+            margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
             color: Colors.white,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
