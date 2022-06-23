@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:todoapp/models/todo.dart';
 
 import '../utils/sql_helper.dart';
 
@@ -10,8 +11,8 @@ class IncompleteTodo extends StatefulWidget {
 }
 
 class IncompleteTodoState extends State<IncompleteTodo> {
-  // All journals
-  List<Map<String, dynamic>> _todos = [];
+  // All todo
+  List<Todo> _todos = [];
 
   late SQLHelper sqlHelper;
   bool _isLoading = true;
@@ -21,7 +22,7 @@ class IncompleteTodoState extends State<IncompleteTodo> {
       _isLoading = true;
     });
 
-    final data = await sqlHelper.getIncompleteTodos();
+    final data = await sqlHelper.getIncompleteTodoList();
 
     setState(() {
       _todos = data;
@@ -37,7 +38,7 @@ class IncompleteTodoState extends State<IncompleteTodo> {
     ));
     refreshTodos();
   }
-
+  // fetch todo list on startup
   @override
   void initState() {
     super.initState();
@@ -48,8 +49,6 @@ class IncompleteTodoState extends State<IncompleteTodo> {
         refreshTodos();
       });
     });
-
-    Future.delayed(Duration.zero, () async {});
   }
 
   @override
@@ -70,33 +69,32 @@ class IncompleteTodoState extends State<IncompleteTodo> {
                         color: Colors.yellow[200],
                         margin: const EdgeInsets.all(5),
                         child: ListTile(
-                          title: Text(_todos[index]['title'],
+                          title: Text(_todos[index].title,
                               style: TextStyle(fontWeight: FontWeight.bold)),
-                          subtitle: Text(_todos[index]['details']),
+                          subtitle: Text(_todos[index].details),
                           trailing: SizedBox(
                             width: 100,
                             child: Row(
                               children: [
                                 Checkbox(
-                                    value: _todos[index]['isCompleted'] == 1
+                                    value: _todos[index].isCompleted == 1
                                         ? true
                                         : false,
                                     onChanged: (value) {
+                                    // Flip the value of the isCompleted column when we click on the checkbox
                                       sqlHelper.updateTodoStatus(
-                                          _todos[index]['id'],
-                                          _todos[index]['isCompleted'] == 1
+                                          _todos[index].id,
+                                          _todos[index].isCompleted == 1
                                               ? 0
                                               : 1);
                                       setState(() {
                                         refreshTodos();
                                       });
-                                    }
-                                    //_showForm(_journals[index]['id']),
-                                    ),
+                                    }),
                                 IconButton(
                                     icon: const Icon(Icons.delete),
                                     onPressed: () => {
-                                          deleteItem(_todos[index]['id']),
+                                          deleteItem(_todos[index].id),
                                         }),
                               ],
                             ),

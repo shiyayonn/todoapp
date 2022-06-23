@@ -1,19 +1,19 @@
 class Todo {
-  int? _id;
-  bool _isCompleted;
+  int _id;
+  int _isCompleted;
   String _title;
   String _details;
-  DateTime _dateCreated;
+  String _dateCreated;
 
-  int? get id => _id;
+  int get id => _id;
 
-  bool get isCompleted => _isCompleted;
+  int get isCompleted => _isCompleted;
 
   String get title => _title;
 
   String get details => _details;
 
-  DateTime get dateCreated => _dateCreated;
+  String get dateCreated => _dateCreated;
 
   Todo(this._id,this._isCompleted, this._title, this._details,
       this._dateCreated);

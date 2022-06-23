@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:todoapp/utils/valididators.dart';
 import '../utils/sql_helper.dart';
 
 class AddTodo extends StatefulWidget {
@@ -32,10 +31,14 @@ class _AddTodoState extends State<AddTodo> {
   }
 
   Future<void> _onSaved() async {
+
+    // Check if form is valid
     if (_formKey.currentState!.validate()) {
       await sqlHelper
           .createItem(_titleCtrl.text, _detailCtrl.text)
           .catchError((err) {
+
+        // Display a snackbar if task already exist in the database
         if (err.toString().contains(
             "DatabaseException(UNIQUE constraint failed: todo.title, todo.details")) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -43,16 +46,18 @@ class _AddTodoState extends State<AddTodo> {
                 backgroundColor: Colors.red,
                 content: Text('Task already exist')),
           );
-          
         }
-        
       });
+
+      // Display a snackbar that tells us the task was succesfully added
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             backgroundColor: Colors.green,
             content: Text('Succesfully added new Task')),
       );
-    } else {
+    } 
+    // If form is not valid, display a snackbar
+    else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             backgroundColor: Colors.red,
@@ -81,43 +86,29 @@ class _AddTodoState extends State<AddTodo> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 TextFormField(
-                  decoration: const InputDecoration(labelText: "Title"),
-                  controller: _titleCtrl,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: (text) {
-                    if (text == null || text.isEmpty) {
-                      return 'Can\'t be empty';
-                    }
-                    return null;
-                  },
-                ),
+                    decoration: const InputDecoration(labelText: "Title"),
+                    controller: _titleCtrl,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: Validators.isEmpty),
                 TextFormField(
                     decoration: const InputDecoration(labelText: "Details"),
                     controller: _detailCtrl,
                     autovalidateMode: AutovalidateMode.onUserInteraction,
-                    validator: (text) {
-                      if (text == null || text.isEmpty) {
-                        return 'Can\'t be empty';
-                      }
-                      return null;
-                    }),
+                    validator: Validators.isEmpty),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                          onPressed: _onSaved,
-                          label: const Text("Save task"),
-                          icon: const Icon(Icons.save)),
-                    ),
+                    ElevatedButton.icon(
+                        onPressed: _onSaved,
+                        label: const Text("Save task"),
+                        icon: const Icon(Icons.save)),
                     Padding(
                       padding: const EdgeInsets.all(5.0),
-                      child: Expanded(
-                          child: ElevatedButton.icon(
-                              onPressed: _cancel,
-                              label: const Text("Cancel"),
-                              icon: const Icon(Icons.cancel))),
-                    )
+                      child: ElevatedButton.icon(
+                          onPressed: _cancel,
+                          label: const Text("Cancel"),
+                          icon: const Icon(Icons.cancel)),
+                    ),
                   ],
                 ),
               ],

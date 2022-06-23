@@ -3,6 +3,8 @@ import 'package:sqflite/sqflite.dart' as sql;
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
+import '../models/todo.dart';
+
 class SQLHelper {
   static final SQLHelper _databaseHelper = SQLHelper._();
 
@@ -37,34 +39,71 @@ class SQLHelper {
         await createTables(database);
       },
       version: 1,
-    );
+    ).catchError((onError){
+        print("There was an error on the database: ${onError}");
+      });
   }
 
   // Create new Todo
   Future<int> createItem(String title, String? details) async {
     final data = {'title': title, 'details': details};
-    final id = await db.insert('todo', data);
+    final id = await db.insert('todo', data).catchError((onError){
+        print("There was an error on the database: ${onError}");
+      });
     return id;
   }
 
-  // Read all todo
-  Future<List<Map<String, dynamic>>> getAllTodos() async {
-    return db.query('todo', orderBy: "id");
+
+  Future<List<Todo>> getAllTodoList() async {
+
+    var todoMapList = await db.query('todo', orderBy: "id").catchError((onError){
+        print("There was an error on the database: ${onError}");
+      });// Get 'Map List' from database
+    
+    List<Todo> todoList = [];
+    
+    for (var todo in todoMapList) {
+      todoList.add(Todo.fromMapObject(todo));
+    }
+
+    return todoList;
   }
 
-  // Read all incomplete todo
-  Future<List<Map<String, dynamic>>> getIncompleteTodos() async {
-    return db.query('todo', where: "isCompleted == 0");
+
+  Future<List<Todo>> getIncompleteTodoList() async {
+
+    var todoMapList = await db.query('todo', where: "isCompleted == 0").catchError((onError){
+        print("There was an error on the database: ${onError}");
+      }); // Get 'Map List' from database
+    
+    List<Todo> todoList = [];
+    
+    for (var todo in todoMapList) {
+      todoList.add(Todo.fromMapObject(todo));
+    }
+
+    return todoList;
   }
 
-  // Read all incomplete todo
-  Future<List<Map<String, dynamic>>> getCompleteTodos() async {
-    return db.query('todo', where: "isCompleted == 1");
-  }
+  Future<List<Todo>> getCompleteTodoList() async {
 
+    var todoMapList = await db.query('todo', where: "isCompleted == 1").catchError((onError){
+        print("There was an error on the database: ${onError}");
+      }); // Get 'Map List' from database
+    
+    List<Todo> todoList = [];
+    
+    for (var todo in todoMapList) {
+      todoList.add(Todo.fromMapObject(todo));
+    }
+
+    return todoList;
+  }
   // Read a single todo by id
   Future<List<Map<String, dynamic>>> getTodo(int id) async {
-    return db.query('todo', where: "id = ?", whereArgs: [id], limit: 1);
+    return db.query('todo', where: "id = ?", whereArgs: [id], limit: 1).catchError((onError){
+        print("There was an error on the database: ${onError}");
+      });
   }
 
   // Update an todo by id
@@ -76,7 +115,9 @@ class SQLHelper {
     };
 
     final result =
-        await db.update('todo', data, where: "id = ?", whereArgs: [id]);
+        await db.update('todo', data, where: "id = ?", whereArgs: [id]).catchError((onError){
+        print("There was an error on the database: ${onError}");
+      });
     return result;
   }
 
@@ -87,14 +128,18 @@ class SQLHelper {
     };
 
     final result =
-        await db.update('todo', data, where: "id = ?", whereArgs: [id]);
+        await db.update('todo', data, where: "id = ?", whereArgs: [id]).catchError((onError){
+        print("There was an error on the database: ${onError}");
+      });
     return result;
   }
 
   // Delete
   Future<void> deleteItem(int id) async {
     try {
-      await db.delete("todo", where: "id = ?", whereArgs: [id]);
+      await db.delete("todo", where: "id = ?", whereArgs: [id]).catchError((onError){
+        print("There was an error on the database: ${onError}");
+      });
     } catch (err) {
       debugPrint("Something went wrong when deleting an item: $err");
     }
